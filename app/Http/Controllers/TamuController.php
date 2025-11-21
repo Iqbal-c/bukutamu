@@ -51,10 +51,12 @@ class TamuController extends Controller
         $data['ip_address'] = $request->ip();
 
         if ($request->hasFile('paraf_file')) {
-            $data['paraf'] = $request->file('paraf_file')->store('paraf', 'public');
+            // $data['paraf'] = $request->paraf_text ?? 'Tidak ada paraf';
+            $data['paraf'] = $request->file('paraf_file')->store('uploads', 'public');
         }
         if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('foto', 'public');
+            // $data['foto'] = $request->file('foto')->store('foto', 'public');
+            $data['foto'] = $request->file('foto')->store('uploads', 'public');
         }
 
         Tamu::create($data);

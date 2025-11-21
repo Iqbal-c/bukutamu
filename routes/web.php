@@ -11,7 +11,14 @@ Route::get('/', function () {
 
 // Form isi tamu
 Route::get('/isi', [TamuController::class, 'create'])->name('tamu.create');
-Route::post('/isi', [TamuController::class, 'store'])->name('tamu.store');
+// Route::post('/isi', [TamuController::class, 'store'])->name('tamu.store');
+Route::post('/isi', [TamuController::class, 'store'])
+    ->name('tamu.store')
+    ->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+        \App\Http\Middleware\VerifyCsrfToken::class,
+    ]);
 
 // Daftar tamu frontend (publik)
 Route::get('/daftar', [TamuController::class, 'daftar'])->name('tamu.daftar');
@@ -31,4 +38,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/export-csv', [TamuController::class, 'exportCsv'])->name('admin.csv');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__.'/jetstream.php';

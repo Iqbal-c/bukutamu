@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Daftarkan middleware AntiWAF supaya bisa dipakai di route
+        $middleware->alias([
+            'antiwaf' => \App\Http\Middleware\AntiWAF::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

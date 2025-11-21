@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('alamat', 255);
             $table->string('no_hp', 20);
             $table->text('pesan_kesan');
-            $table->string('paraf')->nullable(); // Upload gambar paraf
+            //$table->string('paraf')->nullable(); // Upload gambar paraf
+            $table->text('paraf')->nullable();
             $table->string('foto')->nullable();  // Upload foto tamu
             $table->string('ip_address')->nullable();
             $table->timestamps();
