@@ -20,7 +20,7 @@
                             <th>Nama</th>
                             <th>Alamat</th>
                             <th>No. HP</th>
-                            <th>Pesan & Kesan</th>
+                            <th>Keperluan Kunjungan</th>
                             <th>Paraf</th>
                             <th>Foto</th>
                             @auth
@@ -36,7 +36,7 @@
                             <td><strong>{{ $t->nama }}</strong></td>
                             <td>{{ $t->alamat }}</td>
                             <td>{{ $t->no_hp }}</td>
-                            <td>{{ Str::limit($t->pesan_kesan, 40) }}</td>
+                            <td>{{ Str::limit($t->keperluan_kunjungan, 40) }}</td>
                             <td>
                                 @if($t->paraf)
                                     <img src="{{ asset('storage/'.$t->paraf) }}" class="paraf-img" alt="Paraf">

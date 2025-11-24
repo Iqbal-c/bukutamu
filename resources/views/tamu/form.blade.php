@@ -17,8 +17,8 @@
             <input type="text" name="no_hp" class="form-control" required value="{{ old('no_hp') }}">
         </div>
         <div class="col-12">
-            <label class="form-label">Pesan dan Kesan <span class="text-danger">*</span></label>
-            <textarea name="pesan_kesan" class="form-control" rows="3" required>{{ old('pesan_kesan') }}</textarea>
+            <label class="form-label">Keperluan Kunjungan <span class="text-danger">*</span></label>
+            <textarea name="keperluan_kunjungan" class="form-control" rows="3" required>{{ old('keperluan_kunjungan') }}</textarea>
         </div>
 
         <!-- Tanda Tangan -->

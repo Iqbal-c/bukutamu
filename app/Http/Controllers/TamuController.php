@@ -42,12 +42,12 @@ class TamuController extends Controller
             'nama' => 'required|string|max:100',
             'alamat' => 'required|string|max:255',
             'no_hp' => 'required|string|max:20',
-            'pesan_kesan' => 'required|string',
+            'keperluan_kunjungan' => 'required|string',
             'paraf_file' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $data = $request->only(['nama', 'alamat', 'no_hp', 'pesan_kesan']);
+        $data = $request->only(['nama', 'alamat', 'no_hp', 'keperluan_kunjungan']);
         $data['ip_address'] = $request->ip();
 
         if ($request->hasFile('paraf_file')) {
@@ -111,11 +111,11 @@ class TamuController extends Controller
         header('Content-Type: text/csv');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         $handle = fopen('php://output', 'w');
-        fputcsv($handle, ['No', 'Nama', 'Alamat', 'No. HP', 'Pesan', 'Waktu']);
+        fputcsv($handle, ['No', 'Nama', 'Alamat', 'No. HP', 'Keperluan', 'Waktu']);
         foreach ($tamu as $i => $t) {
             fputcsv($handle, [
                 $i + 1, $t->nama, $t->alamat, $t->no_hp,
-                $t->pesan_kesan, $t->created_at->format('d/m/Y H:i')
+                $t->keperluan_kunjungan, $t->created_at->format('d/m/Y H:i')
             ]);
         }
         fclose($handle);
@@ -134,7 +134,7 @@ class TamuController extends Controller
         $tamu = Tamu::findOrFail($id);
         $data = $request->validate([
             'nama' => 'required', 'alamat' => 'required',
-            'no_hp' => 'required', 'pesan_kesan' => 'required',
+            'no_hp' => 'required', 'keperluan_kunjungan' => 'required',
             'foto' => 'nullable|image', 'paraf_file' => 'nullable|image',
         ]);
 
