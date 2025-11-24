@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Buku Tamu Digital</title>
+    <title>Buku Tamu Digital - Diskominfo Barito Selatan</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
@@ -90,10 +90,19 @@
             <p class="mb-0">Diskominfo Barito Selatan</p>
         </div>
         
+        <!-- GANTI BAGIAN barcode-container DENGAN INI -->
         <div class="barcode-container">
-            <div id="qrcode"></div>
+            <!-- GAMBAR LOGO / QR CODE CUSTOM -->
+            <img src="{{ asset('images/qr-diskominfo.png') }}" 
+                alt="QR Code Buku Tamu" 
+                class="img-fluid" 
+                style="max-width: 280px; border: 12px solid white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+
             <p class="mt-3 fw-bold text-primary">
-                SCAN BARCODE INI
+                SCAN QR CODE INI
+            </p>
+            <p class="text-muted small">
+                atau buka: <a href="{{ url('/isi') }}" class="text-decoration-underline">{{ url('/isi') }}</a>
             </p>
         </div>
         
@@ -126,10 +135,12 @@
             </div>
             
             <hr>
-            <p class="text-center text-muted small">
-                Admin: Login di /admin<br>
-                URL: {{ url('/') }}
-            </p>
+            <!-- Tambah di bawah petunjuk -->
+            <div class="text-center mt-4">
+                <a href="{{ url('/isi') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-edit"></i> Isi Buku Tamu Sekarang
+                </a>
+            </div>
         </div>
     </div>
 
@@ -137,15 +148,5 @@
         🖨️ CETAK
     </button>
 
-    <script>
-        QRCode.toCanvas(document.getElementById('qrcode'), '{{ url('/') }}', {
-            width: 250,
-            margin: 2,
-            color: {
-                dark: '#2a5298',
-                light: '#ffffff'
-            }
-        });
-    </script>
 </body>
 </html>

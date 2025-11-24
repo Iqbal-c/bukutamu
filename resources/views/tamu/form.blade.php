@@ -1,7 +1,7 @@
 <!-- resources/views/tamu/form.blade.php -->
-<form method="POST" action="{{ route('tamu.store') }}" enctype="multipart/form-data" id="tamuForm">
-    @csrf
-    <input type="hidden" name="paraf_data" id="parafData">
+<form method="POST" action="{{ route('tamu.store') }}" enctype="multipart/form-data" id="tamuFormDashboard">
+        @csrf
+    <input type="hidden" name="paraf_data" id="parafDataDashboard">
 
     <div class="row g-3">
         <div class="col-md-6">
@@ -48,57 +48,66 @@
 
 @push('scripts')
 <script>
-    // JS Canvas & Konversi ke File (sama seperti /isi)
     document.addEventListener('DOMContentLoaded', function () {
         const canvas = document.getElementById('signaturePad');
         const ctx = canvas.getContext('2d');
+        const hiddenInput = document.getElementById('parafData');
         let drawing = false;
 
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            ctx.scale(ratio, ratio);
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        function startDrawing(e) { drawing = true; draw(e); }
+        function start(e) { drawing = true; draw(e); }
         function draw(e) {
             if (!drawing) return;
-            ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+            e.preventDefault();
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX || e.touches[0].clientX) - rect.left;
             const y = (e.clientY || e.touches[0].clientY) - rect.top;
-            ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
         }
-        function stopDrawing() {
-            if (drawing) { drawing = false; ctx.beginPath();
-                document.getElementById('parafData').value = canvas.toDataURL();
+        function stop() {
+            if (drawing) {
+                drawing = false;
+                hiddenInput.value = canvas.toDataURL('image/png');
             }
         }
 
-        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousedown', start);
         canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('mouseup', stop);
+        canvas.addEventListener('mouseout', stop);
+        canvas.addEventListener('touchstart', start);
         canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchend', stop);
 
-        document.getElementById('clearSignature').addEventListener('click', function () {
+        document.getElementById('clearSignature').addEventListener('click', () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('parafData').value = '';
+            hiddenInput.value = '';
         });
 
+        // KIRIM SEBAGAI FILE LANGSUNG → TIDAK DOBEL!
         document.getElementById('tamuForm').addEventListener('submit', function(e) {
-            const parafData = document.getElementById('parafData').value;
-            const parafFileInput = document.querySelector('[name="paraf_file"]');
-            if (parafData && !parafFileInput.files.length) {
-                fetch(parafData).then(res => res.blob()).then(blob => {
+            if (hiddenInput.value && !document.querySelector('[name="paraf_file"]').files.length) {
+                canvas.toBlob(function(blob) {
                     const file = new File([blob], "paraf.png", { type: "image/png" });
-                    const dtl = new DataTransfer(); dtl.items.add(file);
-                    parafFileInput.files = dtl.files;
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    document.querySelector('[name="paraf_file"]').files = dt.files;
                     this.submit();
-                });
+                }, 'image/png');
                 e.preventDefault();
             }
         });
