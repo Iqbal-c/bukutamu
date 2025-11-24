@@ -1,0 +1,60 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    <h1 class="mb-4">Admin Panel - Buku Tamu</h1>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between">
+            <span>Daftar Tamu</span>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Alamat</th>
+                        <th>No HP</th>
+                        <th>Pesan</th>
+                        <th>Paraf</th>
+                        <th>Foto</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tamu as $i => $t)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $t->nama }}</td>
+                        <td>{{ $t->alamat }}</td>
+                        <td>{{ $t->no_hp }}</td>
+                        <td>{{ Str::limit($t->pesan_kesan, 30) }}</td>
+                        <td>
+                            @if($t->paraf)
+                                <a href="{{ asset('storage/'.$t->paraf) }}" target="_blank">
+                                    <img src="{{ asset('storage/'.$t->paraf) }}" width="50">
+                                </a>
+                            @endif
+                        </td>
+                        <td>
+                            @if($t->foto)
+                                <a href="{{ asset('storage/'.$t->foto) }}" target="_blank">
+                                    <img src="{{ asset('storage/'.$t->foto) }}" width="50">
+                                </a>
+                            @endif
+                        </td>
+                        <td>
+                            <form action="{{ route('admin.destroy', $t->id) }}" method="POST" style="display:inline">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-danger btn-sm" onclick="return confirm('Hapus?')">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buku Tamu Digital - Diskominfo Barito Selatan</title>
+    <title>Portal Buku Tamu Digital</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
@@ -90,7 +90,6 @@
             <p class="mb-0">Diskominfo Barito Selatan</p>
         </div>
         
-        <!-- GANTI BAGIAN barcode-container DENGAN INI -->
         <div class="barcode-container">
             <!-- GAMBAR LOGO / QR CODE CUSTOM -->
             <img src="{{ asset('images/qr-diskominfo.png') }}" 
@@ -135,12 +134,10 @@
             </div>
             
             <hr>
-            <!-- Tambah di bawah petunjuk -->
-            <div class="text-center mt-4">
-                <a href="{{ url('/isi') }}" class="btn btn-success btn-lg">
-                    <i class="fas fa-edit"></i> Isi Buku Tamu Sekarang
-                </a>
-            </div>
+            <p class="text-center text-muted small">
+                Admin: Login di /admin<br>
+                URL: {{ url('/') }}
+            </p>
         </div>
     </div>
 
