@@ -33,13 +33,6 @@ class TamuController extends Controller
             ->appends(['search' => $search, 'sort_by' => $sortBy, 'sort_dir' => $sortDir]);
     }
 
-    // === HALAMAN UTAMA (HOME) === tidak aktif lagi bisa dihapus
-    public function index(Request $request)
-    {
-        $tamu = $this->getTamu($request, 10);
-        return view('home', compact('tamu'));
-    }
-
     // === FORM ISI TAMU ===
     public function create()
     {
