@@ -19,6 +19,16 @@
             <input type="text" name="no_hp" class="form-control @error('no_hp') is-invalid @enderror" required value="{{ old('no_hp') }}">
             @error('no_hp') <div class="invalid-feedback">{{ $message }}</div> @enderror
         </div>
+
+        @if(isset($showTanggalMasuk) && $showTanggalMasuk)
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Masuk Tamu <span class="text-muted">(Opsional, untuk admin)</span></label>
+                <input type="datetime-local" name="tanggal_masuk" class="form-control @error('tanggal_masuk') is-invalid @enderror" value="{{ old('tanggal_masuk', (isset($t) && $t instanceof \App\Models\Tamu && $t->tanggal_masuk) ? $t->tanggal_masuk->format('Y-m-d\TH:i') : ((isset($tamu) && $tamu instanceof \App\Models\Tamu && $tamu->tanggal_masuk) ? $tamu->tanggal_masuk->format('Y-m-d\TH:i') : '')) }}">
+                @error('tanggal_masuk') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <small class="text-muted">Isi jika ingin mengatur tanggal masuk secara manual (misalnya dari buku tamu fisik)</small>
+            </div>
+        @endif
+
         <div class="col-12">
             <label class="form-label">Keperluan Kunjungan <span class="text-danger">*</span></label>
             <textarea name="keperluan_kunjungan" class="form-control @error('keperluan_kunjungan') is-invalid @enderror" rows="3" required>{{ old('keperluan_kunjungan') }}</textarea>
@@ -59,12 +69,17 @@
 
 @push('scripts')
 <script>
-    function initSignaturePad() {
-        const canvas = document.getElementById('signaturePad');
+    let signaturePadData = {};
+    
+    function initSignaturePad(canvasId = 'signaturePad') {
+        if (signaturePadData[canvasId]) return;
+        
+        const canvas = document.getElementById(canvasId);
         if (!canvas) return;
         
         const ctx = canvas.getContext('2d');
-        const hiddenInput = document.getElementById('parafData');
+        const form = canvas.closest('form');
+        const hiddenInput = form.querySelector('[name="paraf_data"]');
         let drawing = false;
 
         function resizeCanvas() {
@@ -75,20 +90,20 @@
             // Hanya resize jika ukurannya benar-benar berubah (mencegah terhapus di HP saat scroll)
             if (canvas.width !== newWidth || canvas.height !== newHeight) {
                 // Simpan konten lama jika ada
-                const tempImage = canvas.toDataURL();
+                const tempImage = canvas.width > 0 ? canvas.toDataURL() : null;
                 
                 canvas.width = newWidth;
                 canvas.height = newHeight;
                 ctx.scale(ratio, ratio);
 
                 // Kembalikan konten lama setelah resize
-                const img = new Image();
-                img.src = tempImage;
-                img.onload = () => ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+                if (tempImage) {
+                    const img = new Image();
+                    img.src = tempImage;
+                    img.onload = () => ctx.drawImage(img, 0, 0, canvas.offsetWidth, canvas.offsetHeight);
+                }
             }
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
 
         function start(e) { 
             drawing = true; 
@@ -97,8 +112,8 @@
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#000';
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX || e.touches[0].clientX) - rect.left;
-            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x, y);
@@ -108,15 +123,15 @@
             if (!drawing) return;
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX || e.touches[0].clientX) - rect.left;
-            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             ctx.lineTo(x, y);
             ctx.stroke();
         }
         function stop() {
             if (drawing) {
                 drawing = false;
-                hiddenInput.value = canvas.toDataURL('image/png');
+                if (hiddenInput) hiddenInput.value = canvas.toDataURL('image/png');
             }
         }
 
@@ -124,19 +139,18 @@
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stop);
         canvas.addEventListener('mouseout', stop);
-        canvas.addEventListener('touchstart', start);
-        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
         canvas.addEventListener('touchend', stop);
 
-        const clearBtn = document.getElementById('clearSignature');
+        const clearBtn = form.querySelector('#clearSignature');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                hiddenInput.value = '';
+                if (hiddenInput) hiddenInput.value = '';
             });
         }
 
-        const form = document.getElementById('tamuForm');
         if (form) {
             let formSubmitted = false;
             form.addEventListener('submit', async function(e) {
@@ -153,17 +167,17 @@
                     if (loadingModal) loadingModal.style.display = 'flex';
 
                     // 1. Ambil Signature Pad (Paraf)
-                    if (hiddenInput.value && !document.querySelector('[name="paraf_file"]').files.length) {
+                    if (hiddenInput && hiddenInput.value && !form.querySelector('[name="paraf_file"]').files.length) {
                         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                        const file = new File([blob], "paraf.png", { type: "image/png" });
+                        const file = new File([blob], "paraf.png", { type: 'image/png' });
                         const dt = new DataTransfer();
                         dt.items.add(file);
-                        document.querySelector('[name="paraf_file"]').files = dt.files;
+                        form.querySelector('[name="paraf_file"]').files = dt.files;
                     }
 
                     // 2. Kompres Foto Tamu jika ada
-                    const fotoInput = document.querySelector('[name="foto"]');
-                    if (fotoInput.files.length > 0) {
+                    const fotoInput = form.querySelector('[name="foto"]');
+                    if (fotoInput && fotoInput.files.length > 0) {
                         const originalFile = fotoInput.files[0];
                         
                         // Hanya kompres jika ukurannya > 1MB
@@ -191,6 +205,14 @@
                 }
             });
         }
+
+        signaturePadData[canvasId] = {
+            canvas: canvas,
+            resizeCanvas: resizeCanvas
+        };
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
     }
 
     // Fungsi Helper Kompres Gambar
@@ -226,11 +248,20 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', initSignaturePad);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Coba inisialisasi, tapi jika canvas belum terlihat (misal di modal) akan dihandle oleh shown.bs.modal
+        initSignaturePad('signaturePad');
+    });
 
-    // Initialize signature pad when modal is shown
+    // Initialize signature pad ketika modal ditampilkan
     document.addEventListener('shown.bs.modal', function () {
-        setTimeout(initSignaturePad, 100);
+        setTimeout(function() {
+            initSignaturePad('signaturePad');
+            // Panggil resize lagi untuk memastikan canvas memiliki ukuran yang tepat
+            if (signaturePadData['signaturePad']) {
+                signaturePadData['signaturePad'].resizeCanvas();
+            }
+        }, 200);
     });
 </script>
 @endpush

@@ -55,7 +55,7 @@
                         @forelse($tamu as $i => $t)
                         <tr @if($loop->first) class="table-light" @endif>
                             <td class="text-center"><strong>{{ $tamu->firstItem() + $i }}</strong></td>
-                            <td class="text-center">{{ $t->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="text-center">{{ ($t->tanggal_masuk ?? $t->created_at)->translatedFormat('d M Y, H:i') }}</td>
                             <td><strong>{{ $t->nama }}</strong></td>
                             <td>{{ $t->alamat }}</td>
                             <td class="text-center">{{ $t->no_hp }}</td>

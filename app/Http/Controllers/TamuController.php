@@ -55,6 +55,7 @@ class TamuController extends Controller
             'keperluan_kunjungan' => 'required|string',
             'paraf_file' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
             'foto' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
+            'tanggal_masuk' => 'nullable|date',
         ]);
 
         $data = [
@@ -64,6 +65,10 @@ class TamuController extends Controller
             'keperluan_kunjungan' => $this->sanitizeInput($request->keperluan_kunjungan),
         ];
         $data['ip_address'] = $request->ip();
+        
+        if (Auth::check() && $request->filled('tanggal_masuk')) {
+            $data['tanggal_masuk'] = $request->tanggal_masuk;
+        }
 
         if ($request->hasFile('paraf_file')) {
             $data['paraf'] = $request->file('paraf_file')->store('tamu', 'public');
@@ -257,7 +262,7 @@ class TamuController extends Controller
             echo '<td>' . htmlspecialchars($t->alamat) . '</td>';
             echo '<td>' . htmlspecialchars($t->no_hp) . '</td>';
             echo '<td>' . htmlspecialchars($t->keperluan_kunjungan) . '</td>';
-            echo '<td>' . $t->created_at->format('d/m/Y H:i') . '</td>';
+            echo '<td>' . ($t->tanggal_masuk ?? $t->created_at)->format('d/m/Y H:i') . '</td>';
             echo '</tr>';
         }
         
@@ -317,6 +322,7 @@ class TamuController extends Controller
             'nama' => 'required', 'alamat' => 'required',
             'no_hp' => 'required', 'keperluan_kunjungan' => 'required',
             'foto' => 'nullable|image', 'paraf_file' => 'nullable|image',
+            'tanggal_masuk' => 'nullable|date',
         ]);
 
         $data = [
@@ -325,6 +331,10 @@ class TamuController extends Controller
             'no_hp' => $this->sanitizeInput($request->no_hp),
             'keperluan_kunjungan' => $this->sanitizeInput($request->keperluan_kunjungan),
         ];
+
+        if ($request->filled('tanggal_masuk')) {
+            $data['tanggal_masuk'] = $request->tanggal_masuk;
+        }
 
         if ($request->hasFile('foto')) {
             if ($tamu->foto) Storage::disk('public')->delete($tamu->foto);

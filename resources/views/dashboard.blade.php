@@ -110,7 +110,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        @include('tamu.form', ['formAction' => route('tamu.store')])
+                        @include('tamu.form', ['formAction' => route('tamu.store'), 'showTanggalMasuk' => true])
                     </div>
                 </div>
             </div>
@@ -221,7 +221,7 @@
                         @forelse($tamu as $i => $t)
                         <tr @if($loop->first) class="table-light" @endif>
                             <td class="text-center"><strong>{{ $tamu->firstItem() + $i }}</strong></td>
-                            <td class="text-center">{{ $t->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="text-center">{{ ($t->tanggal_masuk ?? $t->created_at)->translatedFormat('d M Y, H:i') }}</td>
                             <td><strong>{{ $t->nama }}</strong></td>
                             <td>{{ Str::limit($t->alamat, 30) }}</td>
                             <td class="text-center">{{ $t->no_hp }}</td>

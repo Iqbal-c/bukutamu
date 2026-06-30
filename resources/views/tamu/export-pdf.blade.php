@@ -37,7 +37,7 @@
                 <td>{{ $t->alamat }}</td>
                 <td>{{ $t->no_hp }}</td>
                 <td>{{ $t->keperluan_kunjungan }}</td>
-                <td>{{ $t->created_at->translatedFormat('d F Y H:i') }}</td>
+                <td>{{ ($t->tanggal_masuk ?? $t->created_at)->translatedFormat('d F Y H:i') }}</td>
             </tr>
             @endforeach
         </tbody>

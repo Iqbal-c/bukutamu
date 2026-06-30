@@ -39,6 +39,12 @@
                         <input type="text" name="no_hp" class="form-control @error('no_hp') is-invalid @enderror" required value="{{ old('no_hp', $tamu->no_hp) }}">
                         @error('no_hp') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tanggal Masuk Tamu <span class="text-muted">(Opsional)</span></label>
+                        <input type="datetime-local" name="tanggal_masuk" class="form-control @error('tanggal_masuk') is-invalid @enderror" value="{{ old('tanggal_masuk', $tamu->tanggal_masuk ? $tamu->tanggal_masuk->format('Y-m-d\TH:i') : '') }}">
+                        @error('tanggal_masuk') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <small class="text-muted">Isi jika ingin mengatur tanggal masuk secara manual</small>
+                    </div>
                     <div class="col-12">
                         <label class="form-label">Keperluan Kunjungan <span class="text-danger">*</span></label>
                         <textarea name="keperluan_kunjungan" class="form-control @error('keperluan_kunjungan') is-invalid @enderror" rows="3" required>{{ old('keperluan_kunjungan', $tamu->keperluan_kunjungan) }}</textarea>
@@ -96,12 +102,17 @@
 
 @push('scripts')
 <script>
+    let editSignatureInitialized = false;
     document.addEventListener('DOMContentLoaded', function () {
+        if (editSignatureInitialized) return;
+        editSignatureInitialized = true;
+        
         const canvas = document.getElementById('signaturePad');
         if (!canvas) return;
         
         const ctx = canvas.getContext('2d');
-        const hiddenInput = document.getElementById('parafData');
+        const form = canvas.closest('form');
+        const hiddenInput = form.querySelector('[name="paraf_data"]');
         let drawing = false;
         let formSubmitted = false;
 
@@ -152,7 +163,7 @@
         function stop() {
             if (drawing) {
                 drawing = false;
-                hiddenInput.value = canvas.toDataURL('image/png');
+                if (hiddenInput) hiddenInput.value = canvas.toDataURL('image/png');
             }
         }
 
@@ -164,30 +175,15 @@
         canvas.addEventListener('touchmove', draw);
         canvas.addEventListener('touchend', stop);
 
-        const clearBtn = document.getElementById('clearSignature');
+        const clearBtn = form.querySelector('#clearSignature');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                hiddenInput.value = '';
+                if (hiddenInput) hiddenInput.value = '';
             });
         }
 
-        // Loading Spinner untuk form submit
-        const forms = document.querySelectorAll('form');
-        forms.forEach(form => {
-            form.addEventListener('submit', function() {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...';
-                }
-                const loadingModal = document.getElementById('loadingModal');
-                loadingModal.style.display = 'flex';
-            });
-        });
-
         // Fix: submit form with PUT method and prevent creating new data
-        const form = document.getElementById('tamuForm');
         if (form) {
             form.addEventListener('submit', async function(e) {
                 if (formSubmitted) return;
@@ -203,17 +199,17 @@
                     if (loadingModal) loadingModal.style.display = 'flex';
 
                     // 1. Ambil Signature Pad (Paraf) jika ada coretan baru
-                    if (hiddenInput.value && !document.querySelector('[name="paraf_file"]').files.length) {
+                    if (hiddenInput && hiddenInput.value && !form.querySelector('[name="paraf_file"]').files.length) {
                         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                         const file = new File([blob], "paraf.png", { type: "image/png" });
                         const dt = new DataTransfer();
                         dt.items.add(file);
-                        document.querySelector('[name="paraf_file"]').files = dt.files;
+                        form.querySelector('[name="paraf_file"]').files = dt.files;
                     }
 
                     // 2. Kompres Foto Tamu jika ada file baru
-                    const fotoInput = document.querySelector('[name="foto"]');
-                    if (fotoInput.files.length > 0) {
+                    const fotoInput = form.querySelector('[name="foto"]');
+                    if (fotoInput && fotoInput.files.length > 0) {
                         const originalFile = fotoInput.files[0];
                         if (originalFile.size > 1024 * 1024) {
                             const compressedBlob = await compressImage(originalFile, 0.7, 1200);
@@ -225,15 +221,6 @@
                             dt.items.add(compressedFile);
                             fotoInput.files = dt.files;
                         }
-                    }
-
-                    // 3. Ensure PUT method is sent
-                    if (!form.querySelector('input[name="_method"]')) {
-                        const methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = '_method';
-                        methodInput.value = 'PUT';
-                        form.appendChild(methodInput);
                     }
 
                     formSubmitted = true;
